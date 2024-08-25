@@ -1,19 +1,18 @@
 package com.thepetclub.UserService.service;
 
 import com.thepetclub.UserService.exception.ResourceNotFoundException;
-import com.thepetclub.UserService.model.TemporaryUser;
 import com.thepetclub.UserService.model.User;
 import com.thepetclub.UserService.repository.UserRepository;
 import com.thepetclub.UserService.utils.GenerateOTP;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 
 @Service
+@Slf4j
 public class AuthUserService {
 
     @Autowired
@@ -36,6 +35,8 @@ public class AuthUserService {
         if (user != null && user.isPhoneNumberVerified()) {
             user.setEmail(email);
             userRepository.save(user);
+        } else {
+            throw new ResourceNotFoundException("User not found or phone number not verified");
         }
     }
 
@@ -45,20 +46,22 @@ public class AuthUserService {
             user.setPassword(passwordEncoder.encode(newPassword));
             userRepository.save(user);
         } else {
-            throw new ResourceNotFoundException("User not found");
+            throw new ResourceNotFoundException("User not found or phone number not verified");
         }
     }
 
-
     public boolean verifyEmail(String phoneNumber, String otp) {
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
-        if (existingUser.getEmailOtp().equals(otp) && LocalDateTime.now().isBefore(existingUser.getOtpExpirationTime())) {
+        if (existingUser != null && existingUser.getEmailOtp() != null
+                && existingUser.getEmailOtp().equals(otp)
+                && LocalDateTime.now().isBefore(existingUser.getOtpExpirationTime())) {
             existingUser.setEmailOtp(null);
             existingUser.setOtpExpirationTime(null);
             existingUser.setEmailVerified(true);
             userRepository.save(existingUser);
+            return true;
         }
-        return existingUser.isEmailVerified();
+        return false;
     }
 
     public void sendOtpForEmailVerification(String phoneNumber, String email) {
@@ -67,7 +70,10 @@ public class AuthUserService {
             String otp = generateOTP.generateOtp();
             otpService.sendOtpToEmail(email, otp);
             existingUser.setEmailOtp(otp);
+            existingUser.setOtpExpirationTime(LocalDateTime.now().plusMinutes(10));
             userRepository.save(existingUser);
+        } else {
+            throw new ResourceNotFoundException("User not found or phone number not verified");
         }
     }
 
@@ -76,3 +82,4 @@ public class AuthUserService {
         return existingUser == null;
     }
 }
+

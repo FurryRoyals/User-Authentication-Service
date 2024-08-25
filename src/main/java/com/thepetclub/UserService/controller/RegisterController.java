@@ -20,13 +20,7 @@ import java.util.Map;
 public class RegisterController {
 
     @Autowired
-    private TemporaryUserRepository temporaryUserRepository;
-
-    @Autowired
     private JwtUtils jwtUtils;
-
-    @Autowired
-    private OtpService otpService;
 
     @Autowired
     private RegisterService registerService;
@@ -34,18 +28,19 @@ public class RegisterController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @PutMapping("/user/signup")
-    public ResponseEntity<?> signup(@RequestBody Map<String, String> user) {
+    // User and Admin registration
+    @PutMapping("/{role}/signup")
+    public ResponseEntity<?> signup(@PathVariable("role") String role, @RequestBody Map<String, String> user) {
         if (user != null) {
             String phoneNumber = user.get("phoneNumber");
-            System.out.println(phoneNumber);
             if (phoneNumber == null || phoneNumber.isBlank()) {
                 return new ResponseEntity<>("PhoneNumber is missing", HttpStatus.BAD_REQUEST);
             } else {
                 boolean isVerified = registerService.checkPhoneNumberVerificationForCreation(phoneNumber);
                 if (isVerified) {
-                    registerService.saveNewUser(phoneNumber);
-                    return new ResponseEntity<>("User created successfully", HttpStatus.CREATED);
+                    // Handle both user and admin roles
+                    registerService.saveNewUser(phoneNumber, role);
+                    return new ResponseEntity<>(role + " created successfully", HttpStatus.CREATED);
                 } else {
                     return new ResponseEntity<>("PhoneNumber not verified", HttpStatus.BAD_REQUEST);
                 }
@@ -54,37 +49,39 @@ public class RegisterController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/user/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> user) {
+    // OTP verification for both User and Admin
+    @PostMapping("/{role}/verify-otp")
+    public ResponseEntity<?> verifyOtp(@PathVariable("role") String role, @RequestBody Map<String, String> user) {
         String phoneNumber = user.get("phoneNumber");
         String otp = user.get("otp");
         boolean isVerified = registerService.verifyOtp(phoneNumber, otp);
         if (isVerified) {
-            return new ResponseEntity<>("Email verified successfully." + isVerified, HttpStatus.OK);
+            return new ResponseEntity<>("Phone number verified successfully.", HttpStatus.OK);
         } else {
-            return new ResponseEntity<>("Invalid OTP or OTP expired." + isVerified, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Invalid OTP or OTP expired.", HttpStatus.BAD_REQUEST);
         }
     }
 
-    @PostMapping("/user/send-otp")
-    public ResponseEntity<?> sendOtp(@RequestBody Map<String, String> payload) {
+    // Sending OTP for User and Admin
+    @PostMapping("/{role}/send-otp")
+    public ResponseEntity<?> sendOtp(@PathVariable("role") String role, @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
         String username = payload.get("username");
         String password = payload.get("password");
-        System.out.println(phoneNumber + username + password);
         if (!phoneNumber.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
             boolean isVerified = registerService.checkPhoneNumberForVerification(phoneNumber);
             if (isVerified) {
                 return new ResponseEntity<>("A user with this phoneNumber already exists", HttpStatus.OK);
             }
-            registerService.sendOtpForVerification(phoneNumber, username, password);
+            registerService.sendOtpForVerification(phoneNumber, username, password, role);
             return new ResponseEntity<>("Otp has been sent successfully", HttpStatus.OK);
         }
         return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
     }
 
-    @PostMapping("/user/login")
-    public ResponseEntity<String> login(@RequestBody Map<String, String> payload) {
+    // User and Admin login
+    @PostMapping("/{role}/login")
+    public ResponseEntity<String> login(@PathVariable("role") String role, @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
         String password = payload.get("password");
         if (phoneNumber.isBlank()) {
@@ -95,15 +92,21 @@ public class RegisterController {
             try {
                 User user = registerService.getUserByPhoneNumber(phoneNumber);
                 if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-                    String jwt = jwtUtils.generateToken(phoneNumber);
-                    return new ResponseEntity<>(jwt, HttpStatus.OK);
+                    if (user.getRoles().contains(role.toUpperCase())) {
+                        String jwt = jwtUtils.generateToken(phoneNumber);
+                        return new ResponseEntity<>(jwt, HttpStatus.OK);
+                    } else {
+                        return new ResponseEntity<>("Unauthorized role", HttpStatus.UNAUTHORIZED);
+                    }
                 }
             } catch (Exception e) {
-                log.error("Exception occurred while createAuthenticationToken ", e);
-                return new ResponseEntity<>("Incorrect email or password", HttpStatus.BAD_REQUEST);
+                log.error("Exception occurred while creating authentication token ", e);
+                return new ResponseEntity<>("Incorrect phone number or password", HttpStatus.BAD_REQUEST);
             }
         }
         return new ResponseEntity<>("PhoneNumber not verified", HttpStatus.UNAUTHORIZED);
     }
 }
+
+
 

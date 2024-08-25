@@ -4,6 +4,7 @@ import com.thepetclub.UserService.exception.ResourceNotFoundException;
 import com.thepetclub.UserService.service.AuthUserService;
 import com.thepetclub.UserService.service.RegisterService;
 import com.thepetclub.UserService.utils.JwtUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,16 +16,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("auth")
+@Slf4j
 public class AuthUserController {
 
     @Autowired
-    private RegisterService registerService;
-
-    @Autowired
     private AuthUserService authUserService;
-
-    @Autowired
-    private JwtUtils jwtUtils;
 
     @PutMapping("/user/set-email")
     public ResponseEntity<?> setEmail(@RequestBody Map<String, String> user) {
@@ -37,11 +33,12 @@ public class AuthUserController {
                 authUserService.setEmail(phoneNumber, email);
                 return new ResponseEntity<>("Email added successfully", HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("Invalid otp", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("Invalid OTP", HttpStatus.UNAUTHORIZED);
             }
         } catch (UsernameNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
+            log.error("Error updating email", e);
             return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -54,11 +51,12 @@ public class AuthUserController {
             boolean isEmailAvailable = authUserService.checkEmailAvailability(email);
             if (isEmailAvailable) {
                 authUserService.sendOtpForEmailVerification(phoneNumber, email);
-                return new ResponseEntity<>("Otp has been sent successfully", HttpStatus.OK);
+                return new ResponseEntity<>("OTP has been sent successfully", HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("A user with this email id already exists", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("A user with this email already exists", HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
+            log.error("Error sending OTP to email", e);
             return new ResponseEntity<>("Something went wrong", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -73,7 +71,9 @@ public class AuthUserController {
         } catch (ResourceNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (Exception e) {
+            log.error("Error updating password", e);
             return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }
+

@@ -31,8 +31,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests(request -> request
+                        // Public endpoints
                         .requestMatchers("/auth/user/**").permitAll()
-                        .requestMatchers("/auth/**").authenticated()
+
+                        // Endpoints that can be accessed by users with any role (USER or ADMIN)
+                        .requestMatchers("/auth/password/reset").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/auth/password/verify-otp").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/auth/password/send-otp").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/auth/user/set-email").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/auth/user/send-otp-to-email").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/auth/user/update-password").hasAnyRole("USER", "ADMIN")
+
+                        // Admin-specific endpoints
+                        .requestMatchers("/auth/admin/**").hasRole("ADMIN")
+
+                        // Any other requests
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)

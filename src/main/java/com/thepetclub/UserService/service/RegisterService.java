@@ -12,7 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.awt.desktop.PreferencesHandler;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,6 +35,7 @@ public class RegisterService {
     @Autowired
     private TemporaryUserRepository temporaryUserRepository;
 
+    // Method to check if a phone number is verified for account creation
     public boolean checkPhoneNumberVerificationForCreation(String phoneNumber) {
         Optional<TemporaryUser> tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber);
         if (tempUser.isPresent()) {
@@ -43,15 +46,17 @@ public class RegisterService {
         }
     }
 
-
+    // Method to check if a phone number is verified
     public boolean checkPhoneNumberForVerification(String phoneNumber) {
         User user = userRepository.findByPhoneNumber(phoneNumber);
         return user != null && user.isPhoneNumberVerified();
     }
 
-    public void saveNewUser(String phoneNumber) {
+    // Method to save a new user (or admin) to the database
+    public void saveNewUser(String phoneNumber, String role) {
         TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Temporary user not found"));
+
         User newUser = new User(
                 tempUser.getUsername(),
                 tempUser.getEmail(),
@@ -61,14 +66,27 @@ public class RegisterService {
                 tempUser.isPhoneNumberVerified(),
                 tempUser.getPassword(),
                 LocalDateTime.now(),
-                tempUser.getRoles()
+                getRolesBasedOnRole(role) // Assign roles (USER or ADMIN)
         );
+
         userRepository.save(newUser);
         temporaryUserRepository.delete(tempUser);
-
     }
 
 
+    // Method to get roles based on the given role
+    private List<String> getRolesBasedOnRole(String role) {
+        List<String> roles = new ArrayList<>();
+        if ("admin".equalsIgnoreCase(role)) {
+            roles.add("USER");
+            roles.add("ADMIN");
+        } else {
+            roles.add("USER");
+        }
+        return roles;
+    }
+
+    // Method to verify OTP for a user (or admin)
     public boolean verifyOtp(String phoneNumber, String otp) {
         TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Something went wrong, please try again"));
@@ -84,7 +102,8 @@ public class RegisterService {
         return false;
     }
 
-    public void sendOtpForVerification(String phoneNumber, String username, String password) {
+    // Method to send OTP for phone number verification
+    public void sendOtpForVerification(String phoneNumber, String username, String password, String role) {
         // Check if the user already exists
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
 
@@ -109,7 +128,7 @@ public class RegisterService {
                         false,
                         false,
                         passwordEncoder.encode(password),
-                        Collections.singletonList("USER"),
+                        getRolesBasedOnRole(role), // Default roles (USER or ADMIN)
                         otp,
                         LocalDateTime.now().plusMinutes(10) // Set OTP expiration time
                 );
@@ -128,7 +147,7 @@ public class RegisterService {
         }
     }
 
-
+    // Method to retrieve a user by phone number
     public User getUserByPhoneNumber(String phoneNumber) {
         User user = userRepository.findByPhoneNumber(phoneNumber);
         if (user == null) {
@@ -138,3 +157,5 @@ public class RegisterService {
         }
     }
 }
+
+
