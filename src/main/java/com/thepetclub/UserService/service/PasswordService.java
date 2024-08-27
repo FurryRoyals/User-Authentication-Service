@@ -46,7 +46,7 @@ public class PasswordService {
                 phoneNumber,
                 false,
                 otp,
-                LocalDateTime.now()
+                LocalDateTime.now().plusMinutes(10)
         );
         temporaryUserRepository.save(temporaryUser);
 

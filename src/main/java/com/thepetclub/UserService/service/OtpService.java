@@ -22,7 +22,7 @@ public class OtpService {
     public void sendOtpToPhoneNumber(String phoneNumber, String otp) {
         PhoneNumber from = new PhoneNumber(twilioConfig.getPhoneNumber());
         PhoneNumber to = new PhoneNumber(phoneNumber);
-        String otpMessage = "Dear customer, your otp is: " + otp + "valid for 10 minutes.";
+        String otpMessage = "Dear customer, your otp is: " + otp + " valid for 10 minutes.";
         Message.creator(
                 to, from, otpMessage
         ).create();

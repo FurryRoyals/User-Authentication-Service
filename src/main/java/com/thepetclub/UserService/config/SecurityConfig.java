@@ -2,7 +2,6 @@ package com.thepetclub.UserService.config;
 
 import com.thepetclub.UserService.filter.JwtFilter;
 import com.thepetclub.UserService.service.AuthService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,21 +31,28 @@ public class SecurityConfig {
         return http
                 .authorizeHttpRequests(request -> request
                         // Public endpoints
-                        .requestMatchers("/auth/user/**").permitAll()
+                        .requestMatchers(
+                                "/auth/admin/login",
+                                "/auth/user/**",
+                                "/auth/password/reset",
+                                "/auth/password/verify-otp",
+                                "/auth/password/send-otp"
+                                ).permitAll()
 
-                        // Endpoints that can be accessed by users with any role (USER or ADMIN)
-                        .requestMatchers("/auth/password/reset").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/auth/password/verify-otp").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/auth/password/send-otp").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/auth/user/set-email").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/auth/user/send-otp-to-email").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/auth/user/update-password").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(
+                                "/auth/user/set-email",
+                                "/auth/user/send-otp-to-email",
+                                "/auth/user/update-password"
+                        ).authenticated()
 
                         // Admin-specific endpoints
-                        .requestMatchers("/auth/admin/**").hasRole("ADMIN")
+                        .requestMatchers(
+                                "/auth/admin/verify-otp",
+                                "/auth/admin/signup",
+                                "/auth/admin/send-otp").hasRole("ADMIN")
 
                         // Any other requests
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)

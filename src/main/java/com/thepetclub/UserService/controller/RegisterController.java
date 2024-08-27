@@ -1,5 +1,6 @@
 package com.thepetclub.UserService.controller;
 
+import com.thepetclub.UserService.model.TemporaryUser;
 import com.thepetclub.UserService.model.User;
 import com.thepetclub.UserService.repository.TemporaryUserRepository;
 import com.thepetclub.UserService.service.OtpService;
@@ -28,7 +29,6 @@ public class RegisterController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // User and Admin registration
     @PutMapping("/{role}/signup")
     public ResponseEntity<?> signup(@PathVariable("role") String role, @RequestBody Map<String, String> user) {
         if (user != null) {
@@ -49,9 +49,8 @@ public class RegisterController {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    // OTP verification for both User and Admin
     @PostMapping("/{role}/verify-otp")
-    public ResponseEntity<?> verifyOtp(@PathVariable("role") String role, @RequestBody Map<String, String> user) {
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> user) {
         String phoneNumber = user.get("phoneNumber");
         String otp = user.get("otp");
         boolean isVerified = registerService.verifyOtp(phoneNumber, otp);
@@ -62,9 +61,10 @@ public class RegisterController {
         }
     }
 
-    // Sending OTP for User and Admin
     @PostMapping("/{role}/send-otp")
-    public ResponseEntity<?> sendOtp(@PathVariable("role") String role, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<?> sendOtp(
+            @PathVariable("role") String role,
+            @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
         String username = payload.get("username");
         String password = payload.get("password");
@@ -79,32 +79,51 @@ public class RegisterController {
         return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
     }
 
-    // User and Admin login
     @PostMapping("/{role}/login")
     public ResponseEntity<String> login(@PathVariable("role") String role, @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
         String password = payload.get("password");
+
         if (phoneNumber.isBlank()) {
             return new ResponseEntity<>("PhoneNumber is required", HttpStatus.BAD_REQUEST);
         }
+
         boolean isVerified = registerService.checkPhoneNumberForVerification(phoneNumber);
-        if (isVerified) {
-            try {
-                User user = registerService.getUserByPhoneNumber(phoneNumber);
-                if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-                    if (user.getRoles().contains(role.toUpperCase())) {
-                        String jwt = jwtUtils.generateToken(phoneNumber);
-                        return new ResponseEntity<>(jwt, HttpStatus.OK);
-                    } else {
-                        return new ResponseEntity<>("Unauthorized role", HttpStatus.UNAUTHORIZED);
-                    }
+        log.debug("PhoneNumber: {} is verified: {}", phoneNumber, isVerified);
+
+        if (!isVerified) {
+            return new ResponseEntity<>("PhoneNumber not verified", HttpStatus.UNAUTHORIZED);
+        }
+
+        try {
+            User user = registerService.getUserByPhoneNumber(phoneNumber);
+            log.debug("User fetched: {}", user != null ? user.getPhoneNumber() : "null");
+
+            if (user != null && passwordEncoder.matches(password, user.getPassword())) {
+                log.debug("Password matches for user: {}", user.getPhoneNumber());
+
+                if (user.getRoles().contains(role.toUpperCase())) {
+                    String jwt = jwtUtils.generateToken(phoneNumber);
+                    return new ResponseEntity<>(jwt, HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>("Unauthorized role", HttpStatus.UNAUTHORIZED);
                 }
-            } catch (Exception e) {
-                log.error("Exception occurred while creating authentication token ", e);
+            } else {
                 return new ResponseEntity<>("Incorrect phone number or password", HttpStatus.BAD_REQUEST);
             }
+        } catch (Exception e) {
+            log.error("Exception occurred while creating authentication token", e);
+            return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>("PhoneNumber not verified", HttpStatus.UNAUTHORIZED);
+    }
+
+
+    @PostMapping("/{role}/temp")
+    public ResponseEntity<?> getUserByPhoneNumber(@RequestBody Map<String, String> user) {
+        String phoneNumber = user.get("phoneNumber");
+        TemporaryUser tempUser = registerService.getTempUserByPhoneNumber(phoneNumber);
+        System.out.println(tempUser);
+        return new ResponseEntity<>(tempUser, HttpStatus.OK);
     }
 }
 

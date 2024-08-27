@@ -10,10 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.awt.desktop.PreferencesHandler;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -154,6 +152,15 @@ public class RegisterService {
             throw new ResourceNotFoundException("No user found with phoneNumber: " + phoneNumber);
         } else {
             return user;
+        }
+    }
+
+    public TemporaryUser getTempUserByPhoneNumber(String phoneNumber) {
+        Optional<TemporaryUser> tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber);
+        if (tempUser.isPresent()) {
+            return tempUser.get();
+        } else {
+            return null;
         }
     }
 }

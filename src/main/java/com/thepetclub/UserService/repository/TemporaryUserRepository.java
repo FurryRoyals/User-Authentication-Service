@@ -8,4 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface TemporaryUserRepository extends JpaRepository<TemporaryUser, Long> {
-    Optional<TemporaryUser> findByPhoneNumber(String phoneNumber);}
+    Optional<TemporaryUser> findByPhoneNumber(String phoneNumber);
+}
+
+

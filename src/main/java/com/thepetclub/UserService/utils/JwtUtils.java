@@ -20,8 +20,7 @@ public class JwtUtils {
 
     // Generate a signing key from the secret key
     private SecretKey getSigningKey() {
-        byte[] keyBytes = secretKey.getBytes();
-        return new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
+        return new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS256.getJcaName());
     }
 
     // Extract the phone number (subject) from the token

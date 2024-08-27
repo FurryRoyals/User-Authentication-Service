@@ -24,7 +24,7 @@ public class AuthServiceImpl implements AuthService{
                 .password(user.getPassword())
                 .roles(user.getRoles().toArray(new String[0]))
                 .build();
-    }
+}
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
