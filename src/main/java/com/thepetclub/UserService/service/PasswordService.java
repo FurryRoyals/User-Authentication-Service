@@ -5,7 +5,8 @@ import com.thepetclub.UserService.model.User;
 import com.thepetclub.UserService.repository.TemporaryUserRepository;
 import com.thepetclub.UserService.repository.UserRepository;
 import com.thepetclub.UserService.utils.GenerateOTP;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,25 +14,21 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class PasswordService {
 
-    @Autowired
-    private RegisterService registerService;
+    private final RegisterService registerService;
 
-    @Autowired
-    private TemporaryUserRepository temporaryUserRepository;
+    private final TemporaryUserRepository temporaryUserRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private OtpService otpService;
+    private final OtpService otpService;
 
-    @Autowired
-    private GenerateOTP generateOTP;
+    private final GenerateOTP generateOTP;
 
     public void resetPassword(String phoneNumber, String newPassword) {
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);

@@ -6,7 +6,7 @@ import com.thepetclub.UserService.model.User;
 import com.thepetclub.UserService.repository.TemporaryUserRepository;
 import com.thepetclub.UserService.repository.UserRepository;
 import com.thepetclub.UserService.utils.GenerateOTP;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,22 +16,18 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class RegisterService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private GenerateOTP generateOTP;
+    private final GenerateOTP generateOTP;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private OtpService otpService;
+    private final OtpService otpService;
 
-    @Autowired
-    private TemporaryUserRepository temporaryUserRepository;
+    private final TemporaryUserRepository temporaryUserRepository;
 
     // Method to check if a phone number is verified for account creation
     public boolean checkPhoneNumberVerificationForCreation(String phoneNumber) {

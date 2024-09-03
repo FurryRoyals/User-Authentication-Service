@@ -4,6 +4,10 @@ import com.thepetclub.UserService.model.User;
 import com.thepetclub.UserService.service.AdminRegisterService;
 import com.thepetclub.UserService.service.RegisterService;
 import com.thepetclub.UserService.utils.JwtUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,20 +22,18 @@ import java.util.Map;
 
 
 @RestController
+@Slf4j
 @RequestMapping("auth/ADMIN")
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private RegisterService registerService;
+    private final RegisterService registerService;
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private AdminRegisterService adminregisterService;
+    private final AdminRegisterService adminregisterService;
 
     @PostMapping("/save")
     public ResponseEntity<?> saveNewAdmin(@RequestBody Map<String, String> admin) {
@@ -52,6 +54,7 @@ public class AdminController {
                 return new ResponseEntity<>("phoneNumber is alreay in use", HttpStatus.UNAUTHORIZED);
             }
         } catch (Exception e) {
+            log.error("An error occurred while saving the admin: ", e);
             return new ResponseEntity<>("An error occurred while saving the admin", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

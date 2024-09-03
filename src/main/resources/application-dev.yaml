@@ -1,27 +1,15 @@
 spring:
   application:
-    name: UserService
-  h2:
-    console:
-      enabled: true
-  datasource:
-    url: jdbc:h2:mem:test
-    driver-class-name: org.h2.Driver
-    username: sa
-    password: password
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    open-in-view: false
+    name: USER-SERVICE
 
-#  data:
-#    mongodb:
-#      uri: ${mongo_uri}
-#      database: ThePetClub
-#      auto-index-creation: true
-#      username: ${mongo_username}
-#      password: ${mongo_password}
+  data:
+    mongodb:
+      uri: ${mongo_uri}
+      database: ThePetClub
+      auto-index-creation: true
+      username: ${mongo_username}
+      password: ${mongo_password}
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -39,3 +27,12 @@ twilio:
   accountSID: ${account_SID}
   authToken: ${auth_Token}
   phoneNumber: ${phone_Number}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+server:
+  PORT: 8080

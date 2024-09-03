@@ -2,8 +2,7 @@ package com.thepetclub.UserService.service;
 
 import com.thepetclub.UserService.model.User;
 import com.thepetclub.UserService.repository.UserRepository;
-import org.eclipse.angus.mail.iap.Literal;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,13 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AdminRegisterService {
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public boolean saveNewAdmin(
             String username, String email,

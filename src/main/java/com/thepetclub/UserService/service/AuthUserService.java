@@ -4,8 +4,8 @@ import com.thepetclub.UserService.exception.ResourceNotFoundException;
 import com.thepetclub.UserService.model.User;
 import com.thepetclub.UserService.repository.UserRepository;
 import com.thepetclub.UserService.utils.GenerateOTP;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,22 +13,18 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuthUserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private RegisterService registerService;
+    private final RegisterService registerService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private GenerateOTP generateOTP;
+    private final GenerateOTP generateOTP;
 
-    @Autowired
-    private OtpService otpService;
+    private final OtpService otpService;
 
     public void setEmail(String phoneNumber, String email) {
         User user = userRepository.findByPhoneNumber(phoneNumber);

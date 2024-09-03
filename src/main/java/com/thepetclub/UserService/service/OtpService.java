@@ -3,21 +3,20 @@ package com.thepetclub.UserService.service;
 import com.thepetclub.UserService.config.TwilioConfig;
 import com.twilio.rest.api.v2010.account.Message;
 import com.twilio.type.PhoneNumber;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class OtpService {
 
-    @Autowired
-    private TwilioConfig twilioConfig;
+    private final TwilioConfig twilioConfig;
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
 
     public void sendOtpToPhoneNumber(String phoneNumber, String otp) {
         PhoneNumber from = new PhoneNumber(twilioConfig.getPhoneNumber());

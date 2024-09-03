@@ -1,12 +1,7 @@
 package com.thepetclub.UserService.model;
 
-//import jakarta.persistence.*;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Table;
 import lombok.Data;
-import org.springframework.cglib.core.Local;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,13 +9,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-@Entity
-@Table(name = "\"user\"")
-@Document(collection = "User")
+@Document(collection = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private ObjectId id;
     private String username;
     private String email;
     private boolean emailVerified;
@@ -36,7 +28,7 @@ public class User {
     }
 
     public User(
-            Long id,
+            ObjectId id,
             String username,
             String email,
             String phoneNumber,

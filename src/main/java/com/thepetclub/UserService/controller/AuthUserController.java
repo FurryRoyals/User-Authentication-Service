@@ -3,8 +3,8 @@ package com.thepetclub.UserService.controller;
 import com.thepetclub.UserService.exception.ResourceNotFoundException;
 import com.thepetclub.UserService.service.AuthUserService;
 import com.thepetclub.UserService.utils.JwtUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,13 +16,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("auth")
 @Slf4j
+@RequiredArgsConstructor
 public class AuthUserController {
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private AuthUserService authUserService;
+    private final AuthUserService authUserService;
 
     @PutMapping("/user/set-email")
     public ResponseEntity<?> setEmail(

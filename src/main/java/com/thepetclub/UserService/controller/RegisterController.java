@@ -2,12 +2,10 @@ package com.thepetclub.UserService.controller;
 
 import com.thepetclub.UserService.model.TemporaryUser;
 import com.thepetclub.UserService.model.User;
-import com.thepetclub.UserService.repository.TemporaryUserRepository;
-import com.thepetclub.UserService.service.OtpService;
 import com.thepetclub.UserService.service.RegisterService;
 import com.thepetclub.UserService.utils.JwtUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,16 +16,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("auth")
 @Slf4j
+@RequiredArgsConstructor
 public class RegisterController {
 
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-    @Autowired
-    private RegisterService registerService;
+    private final RegisterService registerService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     @PutMapping("/{role}/signup")
     public ResponseEntity<?> signup(@PathVariable("role") String role, @RequestBody Map<String, String> user) {

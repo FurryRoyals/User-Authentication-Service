@@ -2,8 +2,8 @@ package com.thepetclub.UserService.controller;
 
 import com.thepetclub.UserService.service.PasswordService;
 import com.thepetclub.UserService.service.RegisterService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,13 +13,12 @@ import java.util.Map;
 @RestController
 @RequestMapping("auth")
 @Slf4j
+@RequiredArgsConstructor
 public class ResetPasswordController {
 
-    @Autowired
-    private PasswordService passwordService;
+    private final PasswordService passwordService;
 
-    @Autowired
-    private RegisterService registerService;
+    private final RegisterService registerService;
 
     @PutMapping("/password/reset")
     public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> payload) {
