@@ -28,4 +28,22 @@ public class ApiService {
         }
         return true;
     }
+
+    public boolean validateUser(String phoneNumber) {
+        User user = userRepository.findByPhoneNumber(phoneNumber);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found");
+        }
+        if (!user.isPhoneNumberVerified()) {
+            throw new UnauthorizedException("Phone number is not verified");
+        }
+        if (!user.getRoles().contains("USER")) {
+            throw new UnauthorizedException("Unauthorized access!");
+        }
+        return true;
+    }
+
+    public String getUserId(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber).getId().toString();
+    }
 }

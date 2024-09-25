@@ -8,4 +8,5 @@ import lombok.Data;
 public class AuthClientResponse {
     private String message;
     private boolean isVerified;
+    private String userId;
 }
