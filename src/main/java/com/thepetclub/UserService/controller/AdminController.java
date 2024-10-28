@@ -23,7 +23,7 @@ import java.util.Map;
 
 @RestController
 @Slf4j
-@RequestMapping("auth/ADMIN")
+@RequestMapping("${prefix}//ADMIN")
 @RequiredArgsConstructor
 public class AdminController {
 

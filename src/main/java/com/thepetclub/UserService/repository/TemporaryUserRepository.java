@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface TemporaryUserRepository extends MongoRepository<TemporaryUser, ObjectId> {
+public interface TemporaryUserRepository extends MongoRepository<TemporaryUser, String> {
     Optional<TemporaryUser> findByPhoneNumber(String phoneNumber);
 }
 

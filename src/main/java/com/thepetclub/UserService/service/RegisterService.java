@@ -47,24 +47,25 @@ public class RegisterService {
     }
 
     // Method to save a new user (or admin) to the database
-    public void saveNewUser(String phoneNumber, String role) {
+    public User saveNewUser(String phoneNumber, String password, String username, String role) {
         TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber)
-                .orElseThrow(() -> new ResourceNotFoundException("Temporary user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Temporary user not found with: " + phoneNumber));
 
         User newUser = new User(
-                tempUser.getUsername(),
+                username,
                 tempUser.getEmail(),
                 "",
                 null,
                 tempUser.getPhoneNumber(),
                 tempUser.isPhoneNumberVerified(),
-                tempUser.getPassword(),
+                passwordEncoder.encode(password),
                 LocalDateTime.now(),
                 getRolesBasedOnRole(role) // Assign roles (USER or ADMIN)
         );
 
-        userRepository.save(newUser);
+        User savedUser = userRepository.save(newUser);
         temporaryUserRepository.delete(tempUser);
+        return savedUser;
     }
 
 
@@ -97,7 +98,7 @@ public class RegisterService {
     }
 
     // Method to send OTP for phone number verification
-    public void sendOtpForVerification(String phoneNumber, String username, String password, String role) {
+    public void sendOtpForVerification(String phoneNumber, String role) {
         // Check if the user already exists
         User existingUser = userRepository.findByPhoneNumber(phoneNumber);
 
@@ -116,12 +117,12 @@ public class RegisterService {
             if (tempUser == null) {
                 // Create a new temporary user if one does not exist
                 tempUser = new TemporaryUser(
-                        username,
+                        "",
                         "",
                         phoneNumber,
                         false,
                         false,
-                        passwordEncoder.encode(password),
+                        "",
                         getRolesBasedOnRole(role), // Default roles (USER or ADMIN)
                         otp,
                         LocalDateTime.now().plusMinutes(10) // Set OTP expiration time

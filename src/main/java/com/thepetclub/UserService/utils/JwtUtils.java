@@ -3,6 +3,8 @@ package com.thepetclub.UserService.utils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +16,10 @@ import java.util.Map;
 
 @Component
 public class JwtUtils {
+
+    @Getter
+    Date expirationTime = new Date(System.currentTimeMillis()  + 1000L * 60 * 60 * 60 * 24 * 7);
+
 
     @Value("${spring.secretKey}")
     private String secretKey;
@@ -54,7 +60,7 @@ public class JwtUtils {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 60 * 24 * 7))  // 7 days expiration
+                .setExpiration(expirationTime)  // 7 days expiration
                 .signWith(SignatureAlgorithm.HS256, secretKey.getBytes())  // Use secretKey.getBytes() for signing
                 .compact();
     }
@@ -68,4 +74,5 @@ public class JwtUtils {
     public boolean validateToken(String token) {
         return !isTokenExpired(token);
     }
+
 }

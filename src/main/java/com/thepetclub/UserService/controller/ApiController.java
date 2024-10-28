@@ -15,7 +15,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("auth")
+@RequestMapping("${prefix}/")
 @Slf4j
 public class ApiController {
 

@@ -1,7 +1,9 @@
 package com.thepetclub.UserService.controller;
 
+import com.thepetclub.UserService.dto.UserDto;
 import com.thepetclub.UserService.model.TemporaryUser;
 import com.thepetclub.UserService.model.User;
+import com.thepetclub.UserService.response.ApiResponse;
 import com.thepetclub.UserService.service.RegisterService;
 import com.thepetclub.UserService.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+import static org.springframework.http.HttpStatus.*;
+
 @RestController
-@RequestMapping("auth")
+@RequestMapping("${prefix}/")
 @Slf4j
 @RequiredArgsConstructor
 public class RegisterController {
@@ -25,70 +29,83 @@ public class RegisterController {
 
     private final PasswordEncoder passwordEncoder;
 
-    @PutMapping("/{role}/signup")
-    public ResponseEntity<?> signup(@PathVariable("role") String role, @RequestBody Map<String, String> user) {
+    @PostMapping("/{role}/signup")
+    public ResponseEntity<ApiResponse> signup(@PathVariable("role") String role, @RequestBody Map<String, String> user) {
         if (user != null) {
             String phoneNumber = user.get("phoneNumber");
-            if (phoneNumber == null || phoneNumber.isBlank()) {
-                return new ResponseEntity<>("PhoneNumber is missing", HttpStatus.BAD_REQUEST);
+            String username = user.get("username");
+            String password = user.get("password");
+            if (phoneNumber == null || phoneNumber.isBlank() || password.isBlank() || password.isEmpty()) {
+                return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("PhoneNumber are password are required", false, null));
             } else {
                 boolean isVerified = registerService.checkPhoneNumberVerificationForCreation(phoneNumber);
                 if (isVerified) {
                     // Handle both user and admin roles
-                    registerService.saveNewUser(phoneNumber, role);
-                    return new ResponseEntity<>(role + " created successfully", HttpStatus.CREATED);
+                    User savedNewUser = registerService.saveNewUser(phoneNumber, password, username, role);
+                    String token = "Bearer " + jwtUtils.generateToken(phoneNumber);
+                    long expirationTime = jwtUtils.getExpirationTime().getTime();
+                    UserDto userResponse = new UserDto(
+                            savedNewUser.getId(),
+                            savedNewUser.getUsername(),
+                            savedNewUser.getEmail(),
+                            savedNewUser.getPhoneNumber(),
+                            token,
+                            expirationTime);
+                    return ResponseEntity.status(CREATED).body(
+                            new ApiResponse("registration has been done successfully", true, userResponse));
                 } else {
-                    return new ResponseEntity<>("PhoneNumber not verified", HttpStatus.BAD_REQUEST);
+                    return ResponseEntity.status(BAD_REQUEST).body(
+                            new ApiResponse("PhoneNumber not verified", false, null));
                 }
             }
         }
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(BAD_REQUEST);
     }
 
     @PostMapping("/{role}/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> user) {
+    public ResponseEntity<ApiResponse> verifyOtp(@RequestBody Map<String, String> user) {
         String phoneNumber = user.get("phoneNumber");
         String otp = user.get("otp");
         boolean isVerified = registerService.verifyOtp(phoneNumber, otp);
         if (isVerified) {
-            return new ResponseEntity<>("Phone number verified successfully.", HttpStatus.OK);
+            return ResponseEntity.ok(new ApiResponse("Phone number verified successfully.", true, null));
         } else {
-            return new ResponseEntity<>("Invalid OTP or OTP expired.", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(BAD_REQUEST).body(
+                    new ApiResponse("Invalid OTP or OTP expired.", false, null));
         }
     }
 
     @PostMapping("/{role}/send-otp")
-    public ResponseEntity<?> sendOtp(
+    public ResponseEntity<ApiResponse> sendOtp(
             @PathVariable("role") String role,
             @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
-        String username = payload.get("username");
-        String password = payload.get("password");
-        if (!phoneNumber.isEmpty() && !username.isEmpty() && !password.isEmpty()) {
+        if (!phoneNumber.isEmpty()) {
             boolean isVerified = registerService.checkPhoneNumberForVerification(phoneNumber);
             if (isVerified) {
-                return new ResponseEntity<>("A user with this phoneNumber already exists", HttpStatus.OK);
+                return ResponseEntity.ok(
+                        new ApiResponse("A user with this phoneNumber already exists", true, null));
             }
-            registerService.sendOtpForVerification(phoneNumber, username, password, role);
-            return new ResponseEntity<>("Otp has been sent successfully", HttpStatus.OK);
+            registerService.sendOtpForVerification(phoneNumber, role);
+            return ResponseEntity.ok(new ApiResponse("Otp has been sent successfully", true, null));
         }
-        return new ResponseEntity<>("Something went wrong", HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("Something went wrong", false, null));
     }
 
     @PostMapping("/{role}/login")
-    public ResponseEntity<String> login(@PathVariable("role") String role, @RequestBody Map<String, String> payload) {
+    public ResponseEntity<ApiResponse> login(@PathVariable("role") String role, @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
         String password = payload.get("password");
 
         if (phoneNumber.isBlank()) {
-            return new ResponseEntity<>("PhoneNumber is required", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("PhoneNumber is required", false, null));
         }
 
         boolean isVerified = registerService.checkPhoneNumberForVerification(phoneNumber);
         log.debug("PhoneNumber: {} is verified: {}", phoneNumber, isVerified);
 
         if (!isVerified) {
-            return new ResponseEntity<>("PhoneNumber not verified", HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("PhoneNumber not verified", false, null));
         }
 
         try {
@@ -99,17 +116,25 @@ public class RegisterController {
                 log.debug("Password matches for user: {}", user.getPhoneNumber());
 
                 if (user.getRoles().contains(role.toUpperCase())) {
-                    String jwt = jwtUtils.generateToken(phoneNumber);
-                    return new ResponseEntity<>(jwt, HttpStatus.OK);
+                    String token = "Bearer " + jwtUtils.generateToken(phoneNumber);
+                    long expirationTime = jwtUtils.getExpirationTime().getTime();
+                    UserDto userResponse = new UserDto(
+                            user.getId(),
+                            user.getUsername(),
+                            user.getEmail(),
+                            user.getPhoneNumber(),
+                            token,
+                            expirationTime);
+                    return ResponseEntity.ok(new ApiResponse("Login successful", true, userResponse));
                 } else {
-                    return new ResponseEntity<>("Unauthorized role", HttpStatus.UNAUTHORIZED);
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ApiResponse("Unauthorized role", false, null));
                 }
             } else {
-                return new ResponseEntity<>("Incorrect phone number or password", HttpStatus.BAD_REQUEST);
+                return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("Incorrect phone number or password", false, null));
             }
         } catch (Exception e) {
             log.error("Exception occurred while creating authentication token", e);
-            return new ResponseEntity<>("An error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse("An error occurred", false, null));
         }
     }
 
@@ -119,7 +144,7 @@ public class RegisterController {
         String phoneNumber = user.get("phoneNumber");
         TemporaryUser tempUser = registerService.getTempUserByPhoneNumber(phoneNumber);
         System.out.println(tempUser);
-        return new ResponseEntity<>(tempUser, HttpStatus.OK);
+        return new ResponseEntity<>(tempUser, OK);
     }
 }
 

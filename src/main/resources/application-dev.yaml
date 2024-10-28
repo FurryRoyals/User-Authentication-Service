@@ -36,3 +36,4 @@ eureka:
     fetch-registry: true
 server:
   PORT: 8080
+prefix: auth

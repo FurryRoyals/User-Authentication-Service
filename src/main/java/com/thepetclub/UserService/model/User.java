@@ -12,7 +12,7 @@ import java.util.List;
 @Document(collection = "users")
 public class User {
     @Id
-    private ObjectId id;
+    private String id;
     private String username;
     private String email;
     private boolean emailVerified;
@@ -28,7 +28,7 @@ public class User {
     }
 
     public User(
-            ObjectId id,
+            String id,
             String username,
             String email,
             String phoneNumber,
@@ -87,4 +87,5 @@ public class User {
         this.createdAt = createdAt;
         this.roles = roles;
     }
+
 }

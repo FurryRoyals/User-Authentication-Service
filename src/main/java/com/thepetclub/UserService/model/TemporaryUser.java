@@ -13,7 +13,7 @@ import java.util.List;
 @Document()
 public class TemporaryUser {
     @Id
-    private ObjectId id;
+    private String id;
     private String username;
     private String email;
     private boolean emailVerified;
