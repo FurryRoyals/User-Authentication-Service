@@ -84,7 +84,7 @@ public class RegisterController {
             boolean isVerified = registerService.checkPhoneNumberForVerification(phoneNumber);
             if (isVerified) {
                 return ResponseEntity.ok(
-                        new ApiResponse("A user with this phoneNumber already exists", true, null));
+                        new ApiResponse("An user with this number already exists", false, null));
             }
             registerService.sendOtpForVerification(phoneNumber, role);
             return ResponseEntity.ok(new ApiResponse("Otp has been sent successfully", true, null));
