@@ -10,7 +10,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @EnableFeignClients
-@SpringBootApplication(scanBasePackages = "com.thepetclub")
+@SpringBootApplication(scanBasePackages = "theworldofpuppies")
 @EnableConfigurationProperties
 public class UserServiceApplication {
 
