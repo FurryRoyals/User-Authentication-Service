@@ -1,5 +1,7 @@
 package theworldofpuppies.UserService.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import theworldofpuppies.UserService.exception.ResourceNotFoundException;
 import theworldofpuppies.UserService.model.TemporaryUser;
@@ -7,16 +9,12 @@ import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.repository.TemporaryUserRepository;
 import theworldofpuppies.UserService.repository.UserRepository;
 import theworldofpuppies.UserService.utils.GenerateOTP;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class SimpleLoginService {
+public class SimpleRegisterService {
 
     private final RegisterService registerService;
     private final TemporaryUserRepository temporaryUserRepository;
@@ -34,6 +32,9 @@ public class SimpleLoginService {
         if (!isOtpValid(tempUser, otp)) {
             return false;
         }
+
+        userRepository.save(createNewUser(tempUser));
+
         // Clean up the temporary user record
         temporaryUserRepository.delete(tempUser);
         return true;
@@ -44,10 +45,23 @@ public class SimpleLoginService {
         return tempUser.getOtp().equals(otp) && LocalDateTime.now().isBefore(tempUser.getOtpExpirationTime());
     }
 
+    // Helper method to create a new user from temporary user data
+    private User createNewUser(TemporaryUser tempUser) {
+        return new User(
+                "",
+                tempUser.getEmail(),
+                tempUser.getPhoneNumber(),
+                false,
+                true,
+                "",
+                LocalDateTime.now(),
+                tempUser.getRoles()
+        );
+    }
 
 
     @Transactional
-    public void sendOtpForVerification(String phoneNumber, String role) {
+    public void sendOtpForVerification(String phoneNumber, String email, String role) {
 
         TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber)
                 .orElse(null);
@@ -62,7 +76,7 @@ public class SimpleLoginService {
             // Create a new temporary user if one does not exist
             tempUser = new TemporaryUser(
                     "",
-                    "",
+                    email,
                     phoneNumber,
                     false,
                     false,
