@@ -48,7 +48,7 @@ public class SimpleRegisterService {
     // Helper method to create a new user from temporary user data
     private User createNewUser(TemporaryUser tempUser) {
         return new User(
-                "",
+                tempUser.getUsername(),
                 tempUser.getEmail(),
                 tempUser.getPhoneNumber(),
                 false,
@@ -61,7 +61,7 @@ public class SimpleRegisterService {
 
 
     @Transactional
-    public void sendOtpForVerification(String phoneNumber, String email, String role) {
+    public void sendOtpForVerification(String phoneNumber, String email, String username, String role) {
 
         TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber)
                 .orElse(null);
@@ -75,7 +75,7 @@ public class SimpleRegisterService {
         if (tempUser == null) {
             // Create a new temporary user if one does not exist
             tempUser = new TemporaryUser(
-                    "",
+                    username,
                     email,
                     phoneNumber,
                     false,
@@ -89,6 +89,8 @@ public class SimpleRegisterService {
             tempUser.setOtp(otp);
             tempUser.setOtpExpirationTime(LocalDateTime.now().plusMinutes(10)); // Set OTP expiration time
             tempUser.setPhoneNumberVerified(false);
+            tempUser.setEmail(email);
+            tempUser.setUsername(username);
         }
 
         temporaryUserRepository.save(tempUser);

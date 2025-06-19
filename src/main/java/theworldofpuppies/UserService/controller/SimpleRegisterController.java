@@ -30,12 +30,13 @@ public class SimpleRegisterController {
             @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
         String email = payload.get("email");
+        String username = payload.get("username");
         boolean isUserExist = registerService.checkPhoneNumberForVerification(phoneNumber);
         if (isUserExist) {
             return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("User already exists!", false, null));
         }
-        if (!phoneNumber.isEmpty() && !email.isEmpty()) {
-            simpleRegisterService.sendOtpForVerification(phoneNumber, email, role);
+        if (!phoneNumber.isEmpty() && !email.isEmpty() && !username.isEmpty()) {
+            simpleRegisterService.sendOtpForVerification(phoneNumber, email, username, role);
             return ResponseEntity.ok(new ApiResponse("Otp has been sent successfully", true, null));
         }
         return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("Something went wrong", false, null));
