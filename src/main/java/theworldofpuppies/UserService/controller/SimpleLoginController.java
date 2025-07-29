@@ -1,5 +1,7 @@
 package theworldofpuppies.UserService.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import theworldofpuppies.UserService.dto.UserDto;
 import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.response.ApiResponse;
@@ -18,6 +20,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @RequestMapping("${prefix}/login")
 @RequiredArgsConstructor
 public class SimpleLoginController {
+    private static final Logger log = LoggerFactory.getLogger(SimpleLoginController.class);
     private final JwtUtils jwtUtils;
 
     private final SimpleLoginService simpleLoginService;
@@ -29,12 +32,18 @@ public class SimpleLoginController {
             @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
         boolean isUserExist = registerService.checkPhoneNumberForVerification(phoneNumber);
-        if (!isUserExist) {
-            return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("User doesn't exist", false, null));
-        }
-        if (!phoneNumber.isEmpty()) {
-            simpleLoginService.sendOtpForVerification(phoneNumber, role);
-            return ResponseEntity.ok(new ApiResponse("Otp has been sent successfully", true, null));
+        try {
+            if (!isUserExist) {
+                return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("User doesn't exist", false, null));
+            }
+            if (!phoneNumber.isEmpty()) {
+                simpleLoginService.sendOtpForVerification(phoneNumber, role);
+                return ResponseEntity.ok(new ApiResponse("Otp has been sent successfully", true, null));
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse(e.getMessage(), false, null));
         }
         return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("Something went wrong", false, null));
     }
