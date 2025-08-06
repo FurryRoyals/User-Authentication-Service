@@ -2,7 +2,6 @@ package theworldofpuppies.UserService.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -23,7 +22,7 @@ public class User {
     private LocalDateTime otpExpirationTime;
     private String phoneNumber;
     private boolean phoneNumberVerified;
-    private List<Address> addresses = new ArrayList<>();
+    private List<String> addressIds = new ArrayList<>();
     private String password;
     private LocalDateTime createdAt;
     private List<String> roles;
