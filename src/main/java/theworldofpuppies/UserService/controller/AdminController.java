@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @Slf4j
-@RequestMapping("${prefix}//ADMIN")
+@RequestMapping("${prefix}/ADMIN")
 @RequiredArgsConstructor
 public class AdminController {
 
@@ -46,7 +46,7 @@ public class AdminController {
             if (isNewAdmin) {
                 return new ResponseEntity<>("Admin saved successfully", HttpStatus.OK);
             } else {
-                return new ResponseEntity<>("phoneNumber is alreay in use", HttpStatus.UNAUTHORIZED);
+                return new ResponseEntity<>("phoneNumber is already in use", HttpStatus.UNAUTHORIZED);
             }
         } catch (Exception e) {
             log.error("An error occurred while saving the admin: ", e);
