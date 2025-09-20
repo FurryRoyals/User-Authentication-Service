@@ -23,6 +23,16 @@ spring:
             enable: true
   secretKey: ${secret_key}
 
+access:
+  key:
+    id: ${access_key}
+    secret: ${access_secret}
+s3:
+  region:
+    name: ap-southeast-2
+  bucket:
+    name: skillifymestorage
+
 twilio:
   accountSID: ${account_SID}
   authToken: ${auth_Token}

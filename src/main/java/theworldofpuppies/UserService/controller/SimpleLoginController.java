@@ -1,11 +1,11 @@
 package theworldofpuppies.UserService.controller;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import theworldofpuppies.UserService.dto.UserDto;
 import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.response.ApiResponse;
-import theworldofpuppies.UserService.service.RegisterService;
 import theworldofpuppies.UserService.service.SimpleLoginService;
 import theworldofpuppies.UserService.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +24,14 @@ public class SimpleLoginController {
     private final JwtUtils jwtUtils;
 
     private final SimpleLoginService simpleLoginService;
-    private final RegisterService registerService;
+    private final ModelMapper modelMapper;
 
     @PostMapping("/{role}/send-otp")
     public ResponseEntity<ApiResponse> sendOtp(
             @PathVariable("role") String role,
             @RequestBody Map<String, String> payload) {
         String phoneNumber = payload.get("phoneNumber");
-        boolean isUserExist = registerService.checkPhoneNumberForVerification(phoneNumber);
+        boolean isUserExist = simpleLoginService.checkPhoneNumberForVerification(phoneNumber);
         try {
             if (!isUserExist) {
                 return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("User doesn't exist", false, null));
@@ -54,20 +54,20 @@ public class SimpleLoginController {
         String otp = user.get("otp");
         boolean isVerified = simpleLoginService.verifyOtp(phoneNumber, otp);
         if (isVerified) {
-            User savedUser = registerService.getUserByPhoneNumber(phoneNumber);
+            User savedUser = simpleLoginService.getUserByPhoneNumber(phoneNumber);
             String token = "Bearer " + jwtUtils.generateToken(phoneNumber);
             long expirationTime = jwtUtils.getExpirationTime().getTime();
-            UserDto userResponse = new UserDto(
-                    savedUser.getId(),
-                    savedUser.getUsername(),
-                    savedUser.getEmail(),
-                    savedUser.getPhoneNumber(),
-                    token,
-                    expirationTime);
+            UserDto userResponse = convertToDto(savedUser);
+            userResponse.setToken(token);
+            userResponse.setExpirationTime(expirationTime);
             return ResponseEntity.ok(new ApiResponse("Phone number verified successfully.", true, userResponse));
         } else {
             return ResponseEntity.status(BAD_REQUEST).body(
                     new ApiResponse("Invalid OTP or OTP expired.", false, null));
         }
+    }
+
+    private UserDto convertToDto(User user) {
+        return modelMapper.map(user, UserDto.class);
     }
 }

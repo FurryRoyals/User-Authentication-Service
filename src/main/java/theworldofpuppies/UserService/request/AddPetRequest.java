@@ -1,0 +1,20 @@
+package theworldofpuppies.UserService.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import theworldofpuppies.UserService.model.Aggression;
+import theworldofpuppies.UserService.model.Gender;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class AddPetRequest {
+    private String name;
+    private Gender gender;
+    private String breed;
+    private String age;
+    private String weight;
+    private Aggression aggression;
+    private boolean isVaccinated;
+}

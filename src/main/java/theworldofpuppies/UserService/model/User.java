@@ -15,6 +15,7 @@ import java.util.List;
 public class User {
     @Id
     private String id;
+    private List<String> petIds = new ArrayList<>();
     private String username;
     private String email;
     private boolean emailVerified;

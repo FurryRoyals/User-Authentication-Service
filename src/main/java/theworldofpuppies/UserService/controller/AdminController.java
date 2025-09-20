@@ -1,8 +1,5 @@
 package theworldofpuppies.UserService.controller;
 
-import theworldofpuppies.UserService.service.AdminRegisterService;
-import theworldofpuppies.UserService.service.RegisterService;
-import theworldofpuppies.UserService.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -12,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import theworldofpuppies.UserService.service.AdminRegisterService;
+import theworldofpuppies.UserService.utils.JwtUtils;
 
 import java.util.Map;
 
@@ -24,7 +23,6 @@ public class AdminController {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final RegisterService registerService;
 
     private final JwtUtils jwtUtils;
 

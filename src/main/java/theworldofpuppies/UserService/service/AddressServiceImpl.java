@@ -207,6 +207,12 @@ public class AddressServiceImpl implements AddressService {
         return addressRepository.findByUserId(userId);
     }
 
+    @Override
+    public Address getSelectedAddress(String userId) {
+        return addressRepository.findByUserIdAndIsSelected(userId, true)
+                .orElseThrow(() -> new ResourceNotFoundException("address not found with userId: " + userId));
+    }
+
 
     private <T> boolean updateIfChanged(T newVal, Supplier<T> getter, Consumer<T> setter) {
         T oldVal = getter.get();

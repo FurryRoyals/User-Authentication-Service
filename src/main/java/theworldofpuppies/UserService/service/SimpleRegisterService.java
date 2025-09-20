@@ -11,12 +11,13 @@ import theworldofpuppies.UserService.repository.UserRepository;
 import theworldofpuppies.UserService.utils.GenerateOTP;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SimpleRegisterService {
 
-    private final RegisterService registerService;
     private final TemporaryUserRepository temporaryUserRepository;
     private final UserRepository userRepository;
     private final OtpService otpService;
@@ -81,7 +82,7 @@ public class SimpleRegisterService {
                     false,
                     false,
                     "",
-                    registerService.getRolesBasedOnRole(role), // Default roles (USER or ADMIN)
+                    getRolesBasedOnRole(role), // Default roles (USER or ADMIN)
                     otp,
                     LocalDateTime.now().plusMinutes(10) // Set OTP expiration time
             );
@@ -94,6 +95,28 @@ public class SimpleRegisterService {
         }
 
         temporaryUserRepository.save(tempUser);
+    }
+
+    public boolean checkPhoneNumberForVerification(String phoneNumber) {
+        return (userRepository.findByPhoneNumber(phoneNumber))
+                .map(User::isPhoneNumberVerified)
+                .orElse(false);
+    }
+
+    public User getUserByPhoneNumber(String phoneNumber) {
+        return (userRepository.findByPhoneNumber(phoneNumber))
+                .orElseThrow(() -> new ResourceNotFoundException("No user found with phoneNumber: " + phoneNumber));
+    }
+
+    public List<String> getRolesBasedOnRole(String role) {
+        List<String> roles = new ArrayList<>();
+        if ("admin".equalsIgnoreCase(role)) {
+            roles.add("USER");
+            roles.add("ADMIN");
+        } else {
+            roles.add("USER");
+        }
+        return roles;
     }
 }
 

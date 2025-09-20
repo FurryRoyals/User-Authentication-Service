@@ -19,8 +19,6 @@ public class AuthUserService {
 
     private final UserRepository userRepository;
 
-    private final RegisterService registerService;
-
     private final PasswordEncoder passwordEncoder;
 
     private final GenerateOTP generateOTP;
