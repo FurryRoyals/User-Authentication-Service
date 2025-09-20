@@ -10,12 +10,12 @@ import theworldofpuppies.UserService.model.Gender;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdatePetRequest {
-    private String petId;
+    private String id;
     private String name;
     private Gender gender;
     private String breed;
     private String age;
     private String weight;
-    private boolean isVaccinated;
+    private Boolean isVaccinated;
     private Aggression aggression;
 }

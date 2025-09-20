@@ -16,5 +16,5 @@ public class AddPetRequest {
     private String age;
     private String weight;
     private Aggression aggression;
-    private boolean isVaccinated;
+    private Boolean isVaccinated;
 }

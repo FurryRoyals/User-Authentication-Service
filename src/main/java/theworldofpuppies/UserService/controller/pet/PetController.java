@@ -18,7 +18,6 @@ import theworldofpuppies.UserService.request.UpdatePetRequest;
 import theworldofpuppies.UserService.response.ApiResponse;
 import theworldofpuppies.UserService.service.ApiService;
 import theworldofpuppies.UserService.service.pet.PetService;
-import theworldofpuppies.UserService.service.s3.StorageService;
 import theworldofpuppies.UserService.utils.JwtUtils;
 
 import java.util.List;
@@ -43,10 +42,30 @@ public class PetController {
             PetDto petDto = petService.addPet(request, userId, image);
             return ResponseEntity
                     .ok(new ApiResponse("Pet added successfully", true, petDto));
-        } catch (AlreadyExistsException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        } catch (ResourceNotFoundException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse(e.getMessage(), false, null));
         } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse(e.getMessage(), false, null));
+        }
+    }
+
+    @PutMapping(path = "update",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse> updatePet(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestPart UpdatePetRequest request,
+            @RequestPart(required = false, value = "image") MultipartFile image) {
+        try {
+            extractAndValidateTokenAndGetUser(authorizationHeader); // ✅ ensure token valid
+            PetDto updatedPet = petService.updatePet(request, image);
+            return ResponseEntity.ok(new ApiResponse("Pet updated successfully", true, updatedPet));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse(e.getMessage(), false, null));
+        } catch (Exception e) {
+            log.info(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(e.getMessage(), false, null));
         }
@@ -80,24 +99,6 @@ public class PetController {
             return ResponseEntity.ok(new ApiResponse("Pet retrieved successfully", true, petDtos));
         } catch (ResourceNotFoundException e) {
             log.info(e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse(e.getMessage(), false, null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse(e.getMessage(), false, null));
-        }
-    }
-
-    @PutMapping("update")
-    public ResponseEntity<ApiResponse> updatePet(
-            @RequestHeader("Authorization") String authorizationHeader,
-            @RequestBody UpdatePetRequest request,
-            @RequestPart(value = "image") MultipartFile image) {
-        try {
-            extractAndValidateTokenAndGetUser(authorizationHeader); // ✅ ensure token valid
-            PetDto updatedPet = petService.updatePet(request, image);
-            return ResponseEntity.ok(new ApiResponse("Pet updated successfully", true, updatedPet));
-        } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse(e.getMessage(), false, null));
         } catch (Exception e) {

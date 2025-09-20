@@ -70,7 +70,7 @@ public class PetServiceImpl implements PetService {
         pet.setBreed(request.getBreed());
         pet.setAge(request.getAge());
         pet.setWeight(request.getWeight());
-        pet.setIsVaccinated(request.isVaccinated());
+        pet.setIsVaccinated(request.getIsVaccinated());
         pet.setAggression(request.getAggression());
         pet.setCreationDate(dateTimeFormatter.convertLocalDateTimeToLong(LocalDate.now(), LocalTime.now()));
 
@@ -103,8 +103,8 @@ public class PetServiceImpl implements PetService {
     @Override
     @Transactional
     public PetDto updatePet(UpdatePetRequest request, MultipartFile image) {
-        Pet pet = petRepository.findById(request.getPetId())
-                .orElseThrow(() -> new ResourceNotFoundException("Pet not found: " + request.getPetId()));
+        Pet pet = petRepository.findById(request.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Pet not found: " + request.getId()));
 
         Optional.ofNullable(request.getName())
                 .filter(name -> !name.equals(pet.getName()))
@@ -130,7 +130,7 @@ public class PetServiceImpl implements PetService {
                 .filter(aggression -> !aggression.equals(pet.getAggression()))
                 .ifPresent(pet::setAggression);
 
-        Optional.of(request.isVaccinated())
+        Optional.of(request.getIsVaccinated() )
                 .filter(v -> v != pet.getIsVaccinated())
                 .ifPresent(pet::setIsVaccinated);
 
