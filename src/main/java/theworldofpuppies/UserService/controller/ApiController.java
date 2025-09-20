@@ -46,7 +46,7 @@ public class ApiController {
             boolean isVerified = apiService.validateUser(phoneNumber);
             if (isVerified) {
                 String userId = apiService.getUserId(phoneNumber);
-                return new AuthClientResponse("User verified", true, userId );
+                return new AuthClientResponse("User verified", true, userId);
             }
         } catch (ResourceNotFoundException | UnauthorizedException e) {
             return new AuthClientResponse(e.getMessage(), false, null);

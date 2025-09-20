@@ -14,4 +14,5 @@ public interface AddressService {
     Address updateAddress(String userId, Address address);
     List<Address> updateAddressSelection(String userId, String addressId);
     List<Address> deleteAddress(String userId, String addressId);
+    Address getSelectedAddress(String userId);
 }

@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface AddressRepository extends MongoRepository<Address, String> {
     List<Address> findByUserId(String userId);
+    Optional<Address> findByUserIdAndIsSelected(String userId, Boolean isSelected);
+
 }

@@ -1,5 +1,7 @@
 package theworldofpuppies.UserService.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import theworldofpuppies.UserService.exception.ResourceNotFoundException;
 import theworldofpuppies.UserService.model.TemporaryUser;
@@ -7,18 +9,15 @@ import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.repository.TemporaryUserRepository;
 import theworldofpuppies.UserService.repository.UserRepository;
 import theworldofpuppies.UserService.utils.GenerateOTP;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SimpleLoginService {
 
-    private final RegisterService registerService;
     private final TemporaryUserRepository temporaryUserRepository;
     private final UserRepository userRepository;
     private final OtpService otpService;
@@ -45,7 +44,6 @@ public class SimpleLoginService {
     }
 
 
-
     @Transactional
     public void sendOtpForVerification(String phoneNumber, String role) {
 
@@ -67,7 +65,7 @@ public class SimpleLoginService {
                     false,
                     false,
                     "",
-                    registerService.getRolesBasedOnRole(role), // Default roles (USER or ADMIN)
+                    getRolesBasedOnRole(role), // Default roles (USER or ADMIN)
                     otp,
                     LocalDateTime.now().plusMinutes(10) // Set OTP expiration time
             );
@@ -78,6 +76,28 @@ public class SimpleLoginService {
         }
 
         temporaryUserRepository.save(tempUser);
+    }
+
+    public boolean checkPhoneNumberForVerification(String phoneNumber) {
+        return (userRepository.findByPhoneNumber(phoneNumber))
+                .map(User::isPhoneNumberVerified)
+                .orElse(false);
+    }
+
+    public User getUserByPhoneNumber(String phoneNumber) {
+        return (userRepository.findByPhoneNumber(phoneNumber))
+                .orElseThrow(() -> new ResourceNotFoundException("No user found with phoneNumber: " + phoneNumber));
+    }
+
+    private List<String> getRolesBasedOnRole(String role) {
+        List<String> roles = new ArrayList<>();
+        if ("admin".equalsIgnoreCase(role)) {
+            roles.add("USER");
+            roles.add("ADMIN");
+        } else {
+            roles.add("USER");
+        }
+        return roles;
     }
 }
 

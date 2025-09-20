@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import theworldofpuppies.UserService.exception.AlreadyExistsException;
 import theworldofpuppies.UserService.exception.UnauthorizedException;
 import theworldofpuppies.UserService.model.Address;
+import theworldofpuppies.UserService.response.AddressResponse;
 import theworldofpuppies.UserService.response.ApiResponse;
 import theworldofpuppies.UserService.service.AddressService;
 import theworldofpuppies.UserService.service.ApiService;
@@ -76,15 +77,27 @@ public class AddressController {
     }
 
     @GetMapping("address/get")
-    public ResponseEntity<ApiResponse> getAddress(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<ApiResponse> getAddresses(@RequestHeader("Authorization") String authorizationHeader) {
         try {
             String userId = extractAndValidateTokenAndGetUser(authorizationHeader);
             List<Address> addresses = addressService.getAddresses(userId);
             return ResponseEntity
-                    .ok(new ApiResponse("address added successfully", true, addresses));
+                    .ok(new ApiResponse("addresses fetched successfully", true, addresses));
         } catch (Exception e) {
             return ResponseEntity.status(INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse(e.getMessage(), false, null));
+        }
+    }
+
+    @GetMapping("address/get-userId")
+    public ResponseEntity<AddressResponse> getSelectedAddress(@RequestParam String userId) {
+        try {
+            Address address = addressService.getSelectedAddress(userId);
+            return ResponseEntity
+                    .ok(new AddressResponse("address fetched successfully", true, address));
+        } catch (Exception e) {
+            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
+                    .body(new AddressResponse(e.getMessage(), false, null));
         }
     }
 

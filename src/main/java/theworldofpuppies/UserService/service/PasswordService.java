@@ -19,8 +19,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PasswordService {
 
-    private final RegisterService registerService;
-
     private final TemporaryUserRepository temporaryUserRepository;
 
     private final UserRepository userRepository;
