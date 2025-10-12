@@ -14,7 +14,7 @@ public class Pet {
     @Id
     private String id;
     private String userId;
-    private PetImage petImage;
+    private Image petImage;
     private String name;
     private Gender gender;
     private String breed;

@@ -1,12 +1,15 @@
 package theworldofpuppies.UserService.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import theworldofpuppies.UserService.dto.UserIdAndNameDto;
 import theworldofpuppies.UserService.exception.ResourceNotFoundException;
 import theworldofpuppies.UserService.exception.UnauthorizedException;
 import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.repository.UserRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -52,5 +55,13 @@ public class ApiService {
         User user = userRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with this phoneNumber: " + phoneNumber));
         return user.getId();
+    }
+
+    public List<UserIdAndNameDto> getUserNames(List<String> userIds) {
+        List<User> users = userRepository.findByIdIn(userIds);
+        if (users.isEmpty()) {
+            throw new ResourceNotFoundException("Users not found with these ids");
+        }
+        return users.stream().map(user -> new UserIdAndNameDto(user.getId(), user.getUsername())).toList();
     }
 }

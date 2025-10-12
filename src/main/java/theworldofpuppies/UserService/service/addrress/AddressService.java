@@ -1,8 +1,7 @@
-package theworldofpuppies.UserService.service;
+package theworldofpuppies.UserService.service.addrress;
 
 
 import com.mongodb.client.result.UpdateResult;
-import theworldofpuppies.UserService.exception.ResourceNotFoundException;
 import theworldofpuppies.UserService.model.Address;
 
 import java.util.List;

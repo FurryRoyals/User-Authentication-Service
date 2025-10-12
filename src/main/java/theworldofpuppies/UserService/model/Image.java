@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PetImage {
+public class Image {
     private String fileName;
     private String fileType;
     private String s3Key;

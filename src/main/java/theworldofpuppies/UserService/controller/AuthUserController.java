@@ -1,9 +1,5 @@
 package theworldofpuppies.UserService.controller;
 
-import theworldofpuppies.UserService.exception.ResourceNotFoundException;
-import theworldofpuppies.UserService.response.ApiResponse;
-import theworldofpuppies.UserService.service.AuthUserService;
-import theworldofpuppies.UserService.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -11,6 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import theworldofpuppies.UserService.dto.UpdateUserDto;
+import theworldofpuppies.UserService.exception.ResourceNotFoundException;
+import theworldofpuppies.UserService.request.UpdateUserRequest;
+import theworldofpuppies.UserService.response.ApiResponse;
+import theworldofpuppies.UserService.service.AuthUserService;
+import theworldofpuppies.UserService.service.user.UpdateUser;
+import theworldofpuppies.UserService.utils.JwtUtils;
 
 import java.util.Map;
 
@@ -23,8 +27,32 @@ import static org.springframework.http.HttpStatus.*;
 public class AuthUserController {
 
     private final JwtUtils jwtUtils;
-
     private final AuthUserService authUserService;
+    private final UpdateUser updateUser;
+
+    @PostMapping ("/user/update")
+    public ResponseEntity<ApiResponse> updateUser(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @RequestPart("request") UpdateUserRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+        try {
+            String token = authorizationHeader.startsWith("Bearer ") ? authorizationHeader.substring(7) : authorizationHeader;
+            String phoneNumber = jwtUtils.extractPhoneNumber(token);
+
+            if (!jwtUtils.validateToken(token)) {
+                return ResponseEntity.status(UNAUTHORIZED).body(new ApiResponse("Invalid token", false, null));
+            }
+            UpdateUserDto userDto = updateUser.updateUser(image, request, phoneNumber);
+
+            return ResponseEntity.ok(new ApiResponse("Updated successfully", true, userDto));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).body(new ApiResponse(e.getMessage(), false, null));
+        } catch (Exception e) {
+            log.error("Error updating email", e);
+            return ResponseEntity.status(INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse("An error occurred", false, null));
+        }
+    }
 
     @PutMapping("/user/set-email")
     public ResponseEntity<ApiResponse> setEmail(

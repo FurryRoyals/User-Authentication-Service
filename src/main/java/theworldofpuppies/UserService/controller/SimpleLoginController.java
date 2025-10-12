@@ -7,6 +7,7 @@ import theworldofpuppies.UserService.dto.UserDto;
 import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.response.ApiResponse;
 import theworldofpuppies.UserService.service.SimpleLoginService;
+import theworldofpuppies.UserService.service.s3.StorageService;
 import theworldofpuppies.UserService.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class SimpleLoginController {
 
     private final SimpleLoginService simpleLoginService;
     private final ModelMapper modelMapper;
+    private final StorageService storageService;
 
     @PostMapping("/{role}/send-otp")
     public ResponseEntity<ApiResponse> sendOtp(
@@ -60,6 +62,9 @@ public class SimpleLoginController {
             UserDto userResponse = convertToDto(savedUser);
             userResponse.setToken(token);
             userResponse.setExpirationTime(expirationTime);
+            if (userResponse.getImage() != null) {
+                userResponse.setFetchUrl(storageService.generatePresignedUrl(userResponse.getImage().getS3Key(), 4320));
+            }
             return ResponseEntity.ok(new ApiResponse("Phone number verified successfully.", true, userResponse));
         } else {
             return ResponseEntity.status(BAD_REQUEST).body(

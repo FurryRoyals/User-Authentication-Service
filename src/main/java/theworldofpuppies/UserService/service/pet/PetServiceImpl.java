@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import theworldofpuppies.UserService.dto.PetDto;
 import theworldofpuppies.UserService.exception.ResourceNotFoundException;
 import theworldofpuppies.UserService.model.Pet;
-import theworldofpuppies.UserService.model.PetImage;
+import theworldofpuppies.UserService.model.Image;
 import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.repository.PetRepository;
 import theworldofpuppies.UserService.repository.UserRepository;
@@ -84,7 +84,7 @@ public class PetServiceImpl implements PetService {
         if (image != null) {
             String s3Key = "images/" + savedPet.getId() + "/" + image.getOriginalFilename();
             storageService.uploadFileToS3(image, s3Key);
-            PetImage embeddedImage = new PetImage();
+            Image embeddedImage = new Image();
             embeddedImage.setFileName(image.getOriginalFilename());
             embeddedImage.setFileType(image.getContentType());
             embeddedImage.setS3Key(s3Key);
@@ -140,9 +140,9 @@ public class PetServiceImpl implements PetService {
         // ✅ Update embedded image if a new one is provided
         if (image != null) {
             String s3Key = "images/" + pet.getId() + "/" + image.getOriginalFilename();
-            String downloadUrl = storageService.uploadFileToS3(image, s3Key);
+            storageService.uploadFileToS3(image, s3Key);
 
-            PetImage newImage = new PetImage();
+            Image newImage = new Image();
             newImage.setFileName(image.getOriginalFilename());
             newImage.setFileType(image.getContentType());
 

@@ -1,4 +1,4 @@
-package theworldofpuppies.UserService.service;
+package theworldofpuppies.UserService.service.addrress;
 
 import com.mongodb.client.result.UpdateResult;
 import lombok.RequiredArgsConstructor;
@@ -13,13 +13,11 @@ import theworldofpuppies.UserService.model.User;
 import theworldofpuppies.UserService.repository.AddressRepository;
 import theworldofpuppies.UserService.repository.UserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

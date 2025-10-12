@@ -10,7 +10,7 @@ import theworldofpuppies.UserService.exception.UnauthorizedException;
 import theworldofpuppies.UserService.model.Address;
 import theworldofpuppies.UserService.response.AddressResponse;
 import theworldofpuppies.UserService.response.ApiResponse;
-import theworldofpuppies.UserService.service.AddressService;
+import theworldofpuppies.UserService.service.addrress.AddressService;
 import theworldofpuppies.UserService.service.ApiService;
 import theworldofpuppies.UserService.utils.JwtUtils;
 
