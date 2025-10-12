@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import theworldofpuppies.UserService.model.Aggression;
 import theworldofpuppies.UserService.model.Gender;
-import theworldofpuppies.UserService.model.PetImage;
+import theworldofpuppies.UserService.model.Image;
 
 @Data
 @AllArgsConstructor
@@ -13,7 +13,7 @@ import theworldofpuppies.UserService.model.PetImage;
 public class PetDto {
     private String id;
     private String userId;
-    private PetImage petImage;
+    private Image petImage;
     private String downloadUrl;
     private String name;
     private Gender gender;

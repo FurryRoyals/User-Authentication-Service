@@ -3,9 +3,9 @@ package theworldofpuppies.UserService.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import theworldofpuppies.UserService.model.Image;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor
@@ -19,4 +19,6 @@ public class UserDto {
     private String phoneNumber;
     private String token;
     private Long expirationTime;
+    private Image image;
+    private String fetchUrl;
 }

@@ -27,6 +27,7 @@ public class User {
     private String password;
     private LocalDateTime createdAt;
     private List<String> roles;
+    private Image image;
 
     public User(
             String id,
