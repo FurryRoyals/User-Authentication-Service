@@ -6,8 +6,12 @@ import org.springframework.transaction.annotation.Transactional;
 import theworldofpuppies.UserService.exception.ResourceNotFoundException;
 import theworldofpuppies.UserService.model.TemporaryUser;
 import theworldofpuppies.UserService.model.User;
+import theworldofpuppies.UserService.repository.ReferralRepository;
 import theworldofpuppies.UserService.repository.TemporaryUserRepository;
 import theworldofpuppies.UserService.repository.UserRepository;
+import theworldofpuppies.UserService.request.SignupRequest;
+import theworldofpuppies.UserService.request.SignupVerificationRequest;
+import theworldofpuppies.UserService.service.referral.ReferralService;
 import theworldofpuppies.UserService.utils.GenerateOTP;
 
 import java.time.LocalDateTime;
@@ -22,19 +26,26 @@ public class SimpleRegisterService {
     private final UserRepository userRepository;
     private final OtpService otpService;
     private final GenerateOTP generateOTP;
+    private final ReferralService referralService;
 
     @Transactional
-    public boolean verifyOtp(String phoneNumber, String otp) {
+    public boolean verifyOtp(SignupVerificationRequest request) {
         // Retrieve user and temporary user information
-        TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber)
+        TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(request.getPhoneNumber())
                 .orElseThrow(() -> new ResourceNotFoundException("Something went wrong, please try again"));
 
         // Check if OTP is valid and not expired
-        if (!isOtpValid(tempUser, otp)) {
+        if (!isOtpValid(tempUser, request.getOtp())) {
             return false;
         }
 
-        userRepository.save(createNewUser(tempUser));
+        User user = userRepository.save(createNewUser(tempUser));
+        if (request.getReferralCode() != null && request.getReferralCode().isEmpty()) {
+            referralService.createReferral(request.getReferralCode(), user.getId());
+        }
+
+        referralService.generateReferralCode(user.getId());
+
 
         // Clean up the temporary user record
         temporaryUserRepository.delete(tempUser);
@@ -62,9 +73,9 @@ public class SimpleRegisterService {
 
 
     @Transactional
-    public void sendOtpForVerification(String phoneNumber, String email, String username, String role) {
+    public void sendOtpForVerification(SignupRequest request, String role) {
 
-        TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(phoneNumber)
+        TemporaryUser tempUser = temporaryUserRepository.findByPhoneNumber(request.getPhoneNumber())
                 .orElse(null);
 
         String otp = generateOTP.generateOtp(); // Generate a new OTP
@@ -76,9 +87,9 @@ public class SimpleRegisterService {
         if (tempUser == null) {
             // Create a new temporary user if one does not exist
             tempUser = new TemporaryUser(
-                    username,
-                    email,
-                    phoneNumber,
+                    request.getUsername(),
+                    request.getEmail(),
+                    request.getPhoneNumber(),
                     false,
                     false,
                     "",
@@ -90,8 +101,8 @@ public class SimpleRegisterService {
             tempUser.setOtp(otp);
             tempUser.setOtpExpirationTime(LocalDateTime.now().plusMinutes(10)); // Set OTP expiration time
             tempUser.setPhoneNumberVerified(false);
-            tempUser.setEmail(email);
-            tempUser.setUsername(username);
+            tempUser.setEmail(request.getEmail());
+            tempUser.setUsername(request.getUsername());
         }
 
         temporaryUserRepository.save(tempUser);

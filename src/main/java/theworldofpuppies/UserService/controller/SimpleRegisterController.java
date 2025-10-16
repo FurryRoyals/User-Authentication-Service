@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import theworldofpuppies.UserService.dto.UserDto;
 import theworldofpuppies.UserService.model.User;
+import theworldofpuppies.UserService.request.SignupRequest;
+import theworldofpuppies.UserService.request.SignupVerificationRequest;
 import theworldofpuppies.UserService.response.ApiResponse;
 import theworldofpuppies.UserService.service.SimpleRegisterService;
 import theworldofpuppies.UserService.utils.JwtUtils;
@@ -30,17 +32,14 @@ public class SimpleRegisterController {
     @PostMapping("/{role}/send-otp")
     public ResponseEntity<ApiResponse> sendOtp(
             @PathVariable("role") String role,
-            @RequestBody Map<String, String> payload) {
+            @RequestBody SignupRequest request) {
         try {
-            String phoneNumber = payload.get("phoneNumber");
-            String email = payload.get("email");
-            String username = payload.get("username");
-            boolean isUserExist = simpleRegisterService.checkPhoneNumberForVerification(phoneNumber);
+            boolean isUserExist = simpleRegisterService.checkPhoneNumberForVerification(request.getPhoneNumber());
             if (isUserExist) {
                 return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("User already exists!", false, null));
             }
-            if (!phoneNumber.isEmpty() && !email.isEmpty() && !username.isEmpty()) {
-                simpleRegisterService.sendOtpForVerification(phoneNumber, email, username, role);
+            if (!request.getPhoneNumber().isEmpty() && !request.getEmail().isEmpty() && !request.getUsername().isEmpty()) {
+                simpleRegisterService.sendOtpForVerification(request, role);
                 return ResponseEntity.ok(new ApiResponse("Otp has been sent successfully", true, null));
             }
             return ResponseEntity.status(BAD_REQUEST).body(new ApiResponse("Something went wrong", false, null));
@@ -51,13 +50,11 @@ public class SimpleRegisterController {
     }
 
     @PostMapping("user/verify-otp")
-    public ResponseEntity<ApiResponse> verifyOtp(@RequestBody Map<String, String> user) {
-        String phoneNumber = user.get("phoneNumber");
-        String otp = user.get("otp");
-        boolean isVerified = simpleRegisterService.verifyOtp(phoneNumber, otp);
+    public ResponseEntity<ApiResponse> verifyOtp(@RequestBody SignupVerificationRequest request) {
+        boolean isVerified = simpleRegisterService.verifyOtp(request);
         if (isVerified) {
-            User savedUser = simpleRegisterService.getUserByPhoneNumber(phoneNumber);
-            String token = "Bearer " + jwtUtils.generateToken(phoneNumber);
+            User savedUser = simpleRegisterService.getUserByPhoneNumber(request.getPhoneNumber());
+            String token = "Bearer " + jwtUtils.generateToken(request.getPhoneNumber());
             long expirationTime = jwtUtils.getExpirationTime().getTime();
             UserDto userResponse = convertToDto(savedUser);
             userResponse.setToken(token);

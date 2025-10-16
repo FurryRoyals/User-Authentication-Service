@@ -1,6 +1,7 @@
 package theworldofpuppies.UserService.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -10,6 +11,7 @@ import java.util.List;
 
 
 @Data
+@NoArgsConstructor
 @Document()
 public class TemporaryUser {
     @Id
@@ -23,8 +25,7 @@ public class TemporaryUser {
     private List<String> roles;
     private String otp;
     private LocalDateTime otpExpirationTime;
-
-    public TemporaryUser() {}
+    private String referralCode;
 
     public TemporaryUser(
             String username,

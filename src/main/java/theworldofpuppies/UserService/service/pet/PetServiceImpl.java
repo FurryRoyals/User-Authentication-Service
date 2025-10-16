@@ -82,7 +82,7 @@ public class PetServiceImpl implements PetService {
 
         // Handle image if present
         if (image != null) {
-            String s3Key = "images/" + savedPet.getId() + "/" + image.getOriginalFilename();
+            String s3Key = "pet/" + savedPet.getId() + "/" + image.getOriginalFilename();
             storageService.uploadFileToS3(image, s3Key);
             Image embeddedImage = new Image();
             embeddedImage.setFileName(image.getOriginalFilename());

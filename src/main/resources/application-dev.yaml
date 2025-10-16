@@ -23,6 +23,34 @@ spring:
             enable: true
   secretKey: ${secret_key}
 
+  kafka:
+    bootstrap-servers: pkc-921jm.us-east-2.aws.confluent.cloud:9092
+    properties:
+      security.protocol: SASL_SSL
+      sasl.mechanism: PLAIN
+      sasl.jaas.config: >
+        org.apache.kafka.common.security.plain.PlainLoginModule required
+        username='${CONFLUENT_USERNAME}'
+        password='${CONFLUENT_PASSWORD}';
+      session.timeout.ms: 45000
+
+    consumer:
+      group-id: user-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      auto-offset-reset: earliest
+      max-poll-records: 500
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: theworldofpuppies.UserService.model.WalletEvent
+
+    listener:
+      ack-mode: manual_immediate
+      poll-timeout: 3000
+      type: batch
+
 access:
   key:
     id: ${access_key}
@@ -44,6 +72,8 @@ eureka:
       defaultZone: http://localhost:8761/eureka/
     register-with-eureka: true
     fetch-registry: true
+
 server:
-  PORT: 8080
+  port: 8080
+
 prefix: auth

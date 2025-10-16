@@ -28,7 +28,8 @@ public class User {
     private LocalDateTime createdAt;
     private List<String> roles;
     private Image image;
-
+    private String referralCode;
+    private Double walletBalance = 0.0;
     public User(
             String id,
             String username,
