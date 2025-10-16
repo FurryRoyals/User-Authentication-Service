@@ -21,4 +21,6 @@ public class UserDto {
     private Long expirationTime;
     private Image image;
     private String fetchUrl;
+    private Double walletBalance;
+    private String referralCode;
 }
